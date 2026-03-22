@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Local Storage Demo</title>
+    <meta name="description" content="Iframe meeting - Mesmo Domínio">
+    <meta name="author" content="bcsilva">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/normalize.css"/>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <style>
+        body,* {
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+            background:#4288CC;
+            color:#fff;
+        }
+        .iframemeet {
+            width: 100%;
+            height: 50vh;
+            border: 0;
+            overflow: hidden;
+            -webkit-box-shadow: inset 0px 1px 0px 2px rgba(0,0,0,0.35);
+            -moz-box-shadow: inset 0px 1px 0px 2px rgba(0,0,0,0.35);
+            box-shadow: inset 0px 1px 0px 2px rgba(0,0,0,0.35);
+            padding: 1em;
+        }
+        .hide {
+            display:none;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1 align="center">Conteúdo Filho</h1>
+        <p align="center" class="result" id="result_son">
+            Aguardando...zzzz....
+        </p>
+        <form id="mesmodominio_son" class="iframeconversation hide">
+            <fieldset>
+                <input type="text" value="" placeholder="Texto aqui"/>
+                <input type="submit" value="Enviar"/>
+            </fieldset>
+        </form>
+    </main>
+    <script>
+        function bindEvent(element, eventName, eventHandler) {
+            if (element.addEventListener) {
+                element.addEventListener(eventName, eventHandler, false);
+            } else if (element.attachEvent) {
+                element.attachEvent('on' + eventName, eventHandler);
+            }
+        }
+
+        var sendMessage = function(msg) {
+            window.parent.postMessage(String(msg), '*');
+        };
+
+        var messageForm = document.querySelector('form#mesmodominio_son'),
+            messageInput = document.querySelector('form#mesmodominio_son input[type="text"]'),
+            messageButton = document.querySelector('form#mesmodominio_son input[type="button"]'),
+            results = document.querySelector('#result_son');
+
+        bindEvent(window, 'message', function (e) {
+            if (typeof e.data !== 'string') return;
+            results.innerHTML = 'recebido: ' + e.data;
+            messageForm.classList.remove('hide');
+            console.log('recebido da mãe: ' + e.data);
+        });
+
+        bindEvent(messageForm, 'submit', function(e) {
+            e.preventDefault(); // evita reload da página
+            var txt = String(messageInput.value);
+            messageForm.classList.add('hide');
+            results.innerHTML = 'Mensagem enviada... aguardando resposta...';
+            sendMessage(txt);
+        });
+    </script>
+</body>
+</html>

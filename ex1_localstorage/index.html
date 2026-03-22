@@ -1,0 +1,195 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Local Storage Demo</title>
+<meta name="description" content="The quest for the Local Storage">
+<meta name="author" content="bcsilva">
+<link rel="stylesheet" href="../assets/normalize.css"/>
+<style>
+    body,* {
+        box-sizing: border-box;
+    }
+    fieldset {
+        margin: 0;
+        padding:0;
+        border:0;
+    }
+
+    fieldset.screen {
+        width: 100%;
+        height: calc(100vh - 28.4px);
+    }
+
+    fieldset.screen .map{
+        background-image: url(../assets/grass.jpg);
+        background-position: center center;
+        width: 100%;
+        height: 100%;
+        position:relative;
+        overflow:hidden;
+    }
+
+    fieldset.screen .map .player{
+        background-image: url(../assets/hero.gif);
+        width:32px;
+        height:32px;
+        top:50%;
+        left:50%;
+        position:absolute;
+        
+    }
+    /*fieldset .ui{
+        
+    }
+    fieldset .ui .controls{
+        
+    }*/
+
+</style>
+
+</head>
+
+<body>
+    <center>
+    <form>
+        <fieldset class="ui">
+            <div class="controls">
+                <button class="controls__btn" id="btn_left" type="button">⮜</button>
+                <button class="controls__btn" id="btn_up" type="button">⮝</button>
+                <button class="controls__btn" id="btn_right" type="button">⮞</button>
+                <button class="controls__btn" id="btn_down" type="button">⮟</button>
+                <button class="controls__btn" id="btn_reset" type="button">Reset Game</button>
+            </div>        
+        </fieldset>
+        <fieldset class="screen">
+            <div class="map">
+                <div class="player" id="player1"></div>
+            </div>        
+        </fieldset>
+    </form>
+    </center>
+</body>
+    
+<script>
+
+//instâncias do dom
+const player = document.querySelector('#player1');    
+const btnLeft = document.querySelector('#btn_left');
+const btnUp = document.querySelector('#btn_up');
+const btnRight = document.querySelector('#btn_right');
+const btnDown = document.querySelector('#btn_down');
+const btnReset = document.querySelector('#btn_reset');
+    
+//variáveis auxiliares como coordenadas, velocidade e tamanho do player
+let _xx = 0;
+let _yy = 0;
+let xx = 0;
+let yy = 0;
+let spd = 16;
+let playerSize = 32;
+    
+//vars delimitadoras do mapa
+let mapWidth = document.querySelector('.map').offsetWidth;
+let mapHeight = document.querySelector('.map').offsetHeight;
+const minX = -mapWidth/2;
+const minY = -mapHeight/2;
+const maxX = mapWidth/2-playerSize;
+const maxY = mapHeight/2-playerSize;
+    
+//instância do localstorage
+myStorage = window.localStorage;  
+
+//checa se tem suporte ao localstorage
+if(typeof(Storage) !== "undefined") {
+    
+    //instancia o local storage
+    //console.log('start');
+    //console.log('Pos | X:'+player.offsetLeft+' | Y:'+player.offsetTop);
+    
+    //carrega as cordenadas do localstorage ao iniciar
+    _xx = parseInt(myStorage.getItem('playerX'));
+    _yy = parseInt(myStorage.getItem('playerY'));
+    
+    if (myStorage.playerX === undefined) _xx=0; 
+    if (myStorage.playerX === undefined) _yy=0;
+
+    xx = _xx;
+    yy = _yy;
+
+    movePlayer(player,xx,yy);
+    
+    //click listeners + movimentação
+    btnLeft.addEventListener("click", function(){
+        movePlayer(player,xx,yy,180);
+    });
+    btnUp.addEventListener("click", function(){
+        movePlayer(player,xx,yy,90);
+    });
+    btnRight.addEventListener("click", function(){
+        movePlayer(player,xx,yy,0);
+    });
+    btnDown.addEventListener("click", function(){
+        movePlayer(player,xx,yy,270);
+    });
+    btnReset.addEventListener("click", function(){
+        myStorage.clear(); 
+        //console.log('reset | X:'+xx+' | Y: '+yy);
+    });
+    
+} else {
+    // mensagem de erro
+    console.log('Sem suporte a web storage')
+}
+function movePlayer(_player,x,y,dir){
+    //atualiza as coordenadas do jogador no DOM dentro dos limites do mapa
+    switch(dir){
+        case 0: if (xx<maxX) xx += spd; else xx=maxX; break;
+        case 90: if (yy>minY) yy -= spd; else yy=minY; break;
+        case 180: if (xx>minX) xx -= spd; else xx=minX; break;
+        case 270: if (yy<maxY) yy += spd; else yy=maxY; break;
+    }
+    player.setAttribute('style', 'left:calc(50% + '+x+'px) !important;top:calc(50% + '+y+'px) !important;');
+    //sakva coordenadas no localstorage
+    savePos(myStorage,x,y);
+}
+function savePos(storage,x,y){ 
+    storage.setItem('playerX',x);
+    storage.setItem('playerY',y);
+    //console.log('pos | X:'+x+' | Y: '+y);
+}
+    
+
+//EXTRA: setas direcionais: https://stackoverflow.com/questions/5597060/detecting-arrow-key-presses-in-javascript
+document.onkeydown = checkKey;
+
+function checkKey(e) {
+    e = e || window.event;
+    if (e.keyCode == '38') {
+        // up arrow
+        movePlayer(player,xx,yy,90);
+    }
+    else if (e.keyCode == '40') {
+        // down arrow
+        movePlayer(player,xx,yy,270);
+    }
+    else if (e.keyCode == '37') {
+       // left arrow
+        movePlayer(player,xx,yy,180);
+    }
+    else if (e.keyCode == '39') {
+       // right arrow
+        movePlayer(player,xx,yy,0);
+    }
+
+}
+    
+    
+/*
+grass: https://opengameart.org/content/grass-texture-pack
+hero: https://www.spriters-resource.com/pc_computer/rpgmaker95/sheet/100511/
+mais sobre local storage: https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage
+*/
+</script>
+</html>

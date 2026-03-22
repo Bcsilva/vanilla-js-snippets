@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Local Storage Demo</title>
+    <meta name="description" content="Iframe meeting - Mesmo Domínio">
+    <meta name="author" content="bcsilva">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/normalize.css"/>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <style>
+        body,* {
+        box-sizing: border-box;
+        font-family: 'Roboto', sans-serif;
+        background:#4288CC;
+        color:#fff;
+        }
+        .iframemeet {
+        width: 100%;
+        height: 50vh;
+        border: 0;
+        overflow: hidden;
+        -webkit-box-shadow: inset 0px 1px 0px 2px rgba(0,0,0,0.35);
+        -moz-box-shadow: inset 0px 1px 0px 2px rgba(0,0,0,0.35);
+        box-shadow: inset 0px 1px 0px 2px rgba(0,0,0,0.35);
+        padding: 1em;
+        }  
+        .hide{
+            display:none;
+        } 
+    </style>
+</head>
+<body>
+    <main>
+        <h1 align="center">Conteúdo Filho</h1>
+        <p align="center" class="result" id="result_son">
+            Aguardando...zzzz....
+        </p>
+        <form id="dominiosdiferentes_son" class="iframeconversation hide">
+                <fieldset>
+                    <input type="text" value="" placeholder="Texto aqui"/>
+                    <input type="button" value="Enviar"/>
+                </fieldset>
+            </form>
+    </main>
+
+    <script>
+        //adaptado de: https://gist.github.com/pbojinov/8965299
+        // addEventListener support for IE8
+        function bindEvent(element, eventName, eventHandler) {
+            if (element.addEventListener) {
+                element.addEventListener(eventName, eventHandler, false);
+            } else if (element.attachEvent) {
+                element.attachEvent('on' + eventName, eventHandler);
+            }
+        }
+        // Send a message to the parent
+        var sendMessage = function (msg) {
+            // Make sure you are sending a string, and to stringify JSON
+            window.parent.postMessage(msg, '*');
+        };
+        var results = document.getElementById('results'),
+            messageButton = document.getElementById('message_button');
+
+        var messageForm = document.querySelector('form#dominiosdiferentes_son'),
+            messageInput = document.querySelector('form#dominiosdiferentes_son input[type="text"]'),
+            messageButton = document.querySelector('form#dominiosdiferentes_son input[type="button"]'),
+            results = document.querySelector('#result_son');
+
+        // Listen to messages from parent window
+        bindEvent(window, 'message', function (e) {
+            results.innerHTML = 'recebido: '+e.data;
+            messageForm.classList.remove('hide');
+            console.log('recebido da mãe: '+e.data);
+        });
+        // Send random message data on every button click
+        bindEvent(messageButton, 'click', function (e) {
+            var txt = messageInput.value;
+            messageForm.classList.add('hide');
+            results.innerHTML='Mensagem enviada... aguardando resposta...';
+            sendMessage('' + txt);
+        });
+    </script>
+</body>
+</html>
